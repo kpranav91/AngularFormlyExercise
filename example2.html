@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <!-- Twitter bootstrap -->
+    <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.css" rel="stylesheet">
+
+    <!-- apiCheck is used by formly to validate its api -->
+    <script src="//npmcdn.com/api-check@latest/dist/api-check.js"></script>
+    <!-- This is the latest version of angular (at the time this template was created) -->
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.4.7/angular.js"></script>
+
+    <!-- This is the latest version of formly core. -->
+    <script src="//npmcdn.com/angular-formly@latest/dist/formly.js"></script>
+    <!-- This is the latest version of formly bootstrap templates -->
+    <script src="//npmcdn.com/angular-formly-templates-bootstrap@latest/dist/angular-formly-templates-bootstrap.js"></script>
+    
+    <script src="https://rawgit.com/angular/bower-angular-messages/v1.4.4/angular-messages.js"></script>
+    <script src="https://rawgit.com/angular/bower-angular-animate/v1.4.4/angular-animate.js"></script>
+    <style>
+        body {
+  margin: 20px
+}
+
+.formly-field {
+  margin-bottom: 26px;
+}
+
+.error-messages {
+  position: relative;
+}
+
+.error-messages, .message {
+  opacity: 1;
+  transition: .3s linear all;
+}
+
+.message {
+  font-size: .8em;
+  position: absolute;
+  width: 100%;
+  color: #a94442;
+  margin-top: 2px;
+}
+
+.error-messages.ng-enter.ng-enter-active,
+.message.ng-enter.ng-enter-active {
+  opacity: 1;
+  top: 0;
+}
+
+.error-messages.ng-enter,
+.message.ng-enter {
+  opacity: 0;
+  top: -10px;
+}
+
+.error-messages.ng-leave,
+.message.ng-leave {
+  opacity: 1;
+  top: 0;
+}
+
+.error-messages.ng-leave-active,
+.message.ng-leave-active {
+  opacity: 0;
+  top: -10px;
+}
+
+    </style>
+    <title>Angular Formly Example</title>
+  </head>
+
+  <body ng-app="formlyExample" ng-controller="MainCtrl as vm">
+    <div>
+      <h1>Example of angular-formly validation on submit</h1>
+      <p>This example demonstrates how to check form validation on submit</p>
+      <hr />
+      <form ng-submit="vm.onSubmit()" name="vm.form" novalidate>
+        <formly-form model="vm.model" fields="vm.fields" options="vm.options" form="vm.form">
+          <button type="submit" class="btn btn-primary submit-button" ng-disabled="vm.form.$invalid">Submit</button>
+          <button type="reset" class="btn btn-default" ng-click="vm.options.resetModel()">Reset</button>
+        </formly-form>
+      </form>
+      <hr />
+      <h2>Model Value</h2>
+      <pre>{{vm.model | json}}</pre>
+      <h2>Fields <small>(note, functions are not shown)</small></h2>
+      <pre>{{vm.originalFields | json}}</pre>
+      <h2>Form</h2>
+      <pre>{{vm.form | json}}</pre>
+    </div>
+
+    <div style="margin-top:30px">
+      <small>
+        This is an example for the
+        <a href="https://formly-js.github.io/angular-formly">angular-formly</a>
+        project made with ♥ by
+        <strong>
+          <span ng-if="!vm.author.name || !vm.author.url">
+            {{vm.author.name || 'anonymous'}}
+          </span>
+          <a ng-if="vm.author.url" ng-href="{{::vm.author.url}}">
+            {{vm.author.name}}
+          </a>
+        </strong>
+        <br />
+        This example is running angular version "{{vm.env.angularVersion}}" and formly version "{{vm.env.formlyVersion}}"
+      </small>
+    </div>
+
+    <!-- Put custom templates here -->
+    <script type="text/ng-template" id="error-messages.html">
+      <formly-transclude></formly-transclude>
+      <div ng-messages="fc.$error" ng-if="form.$submitted || options.formControl.$touched" class="error-messages">
+        <div ng-message="{{ ::name }}" ng-repeat="(name, message) in ::options.validation.messages" class="message">{{ message(fc.$viewValue, fc.$modelValue, this)}}</div>
+      </div>
+    </script>
+      <script>
+        /* global angular */
+(function() {
+
+  'use strict';
+
+  var app = angular.module('formlyExample', [
+    'formly', 
+    'formlyBootstrap',
+    'ngAnimate',
+    'ngMessages'
+  ]);
+
+  app.run(function(formlyConfig, formlyValidationMessages) {
+    formlyConfig.extras.errorExistsAndShouldBeVisibleExpression = 'fc.$touched || form.$submitted';
+
+    formlyValidationMessages.addStringMessage('required', 'This field is required');
+  });
+
+  app.config(function (formlyConfigProvider) {
+
+    formlyConfigProvider.setWrapper({
+      name: 'validation',
+      types: ['input'],
+      templateUrl: 'error-messages.html'
+    });
+
+  });
+
+  app.controller('MainCtrl', function MainCtrl(formlyVersion) {
+    var vm = this;
+    // funcation assignment
+    vm.onSubmit = onSubmit;
+
+    // variable assignment
+    vm.author = { // optionally fill in your info below :-)
+      name: 'Vitaly',
+      url: 'https://github.com/m0t0r'
+    };
+    vm.env = {
+      angularVersion: angular.version.full,
+      formlyVersion: formlyVersion
+    };
+
+    vm.model = {};
+    vm.options = {
+        resetModel: function(){
+            vm.model ={};
+        }
+    };
+
+    vm.fields = [
+      {
+        key: 'firstName',
+        type: 'input',
+        templateOptions: {
+          required: true,
+          type: 'text',
+          label: 'First Name'
+        }
+      },
+      {
+        key: 'lastName',
+        type: 'input',
+        templateOptions: {
+          required: true,
+          type: 'text',
+          label: 'Last Name'
+        }
+      }
+    ];
+
+    vm.originalFields = angular.copy(vm.fields);
+
+    // function definition
+    function onSubmit() {
+      if (vm.form.$valid) {
+        vm.options.updateInitialValue();
+        alert(JSON.stringify(vm.model), null, 2);
+      }
+    }
+  });
+
+})();
+      </script>
+  </body>
+
+</html>

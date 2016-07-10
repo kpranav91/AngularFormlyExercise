@@ -1,0 +1,49 @@
+<!doctype html>
+<html class="no-js" lang="">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <title>Angular Formly | Example 1</title>
+<!-- Twitter bootstrap -->
+    <link href="/css/bootstrap.css" rel="stylesheet">
+
+    <!-- apiCheck is used by formly to validate its api -->
+    <script src="/js/api-check.js"></script>
+    <!-- This is the latest version of angular (at the time this template was created) -->
+    <script src="/js/angular.js"></script>
+
+    <!-- This is the current state of master for formly core. -->
+    <script src="/js/formly.js"></script>
+    <!-- This is the current state of master for the bootstrap templates -->
+    <script src="/js/angular-formly-templates-bootstrap.js"></script>
+    <script src="/js/angular-messages.js"></script>
+    <script src="/js/example1.js"></script>  
+    <style>
+        .form_error{
+            color:red;
+        }
+    </style>
+</head>
+
+<body ng-app="formlyApp" ng-controller="TestCtrl as vm">
+    
+    <form ng-submit="vm.onSubmit()" name="vm.form" novalidate>
+          <formly-form model="vm.model" fields="vm.fields" options="vm.options" form="vm.form">
+               <button type="submit" class="btn btn-primary submit-button" ng-disabled="vm.form.$invalid">Submit</button>
+          <button type="button" class="btn btn-default" ng-click="vm.options.resetModel()">Reset</button>
+          </formly-form>         
+    </form>    
+   <pre>{{vm.form|json}}</pre>
+    <!--<pre>{{vm|json}}</pre>-->
+      <!-- Put custom templates here -->
+    <script type="text/ng-template" id="validation.html">
+     <!-- <div class="form_error" ng-message="required">This field is required</div>-->
+      <div class="form_error" ng-message="minlength">Too short</div>
+      <div class="form_error" ng-message="maxlength">Too long</div>
+      <div class="form_error" ng-message="email">Invalid email address</div>
+      <div class="form_error" ng-message="isUnique">Username already exist.<br> Please enter new Username.</div>    
+    </script>
+    
+</body>
+</html>

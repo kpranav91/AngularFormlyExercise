@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    
+    <!-- Twitter bootstrap -->
+    <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.css" rel="stylesheet">
+
+    <!-- apiCheck is used by formly to validate its api -->
+    <script src="//npmcdn.com/api-check@latest/dist/api-check.js"></script>
+    <!-- This is the latest version of angular (at the time this template was created) -->
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.4.7/angular.js"></script>
+
+    <!-- This is the latest version of formly core. -->
+    <script src="//npmcdn.com/angular-formly@latest/dist/formly.js"></script>
+    <!-- This is the latest version of formly bootstrap templates -->
+    <script src="//npmcdn.com/angular-formly-templates-bootstrap@latest/dist/angular-formly-templates-bootstrap.js"></script>
+
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.4.7/angular-messages.min.js"></script>
+
+    <title>Angular Formly Example</title>
+    <style>
+        body {
+  margin: 20px
+}
+
+.formly-field {
+  margin-bottom: 20px;
+}
+
+.validation {
+  position: absolute;
+  font-size: .8em;
+  color: #a94442;
+}
+
+.formly-template-wrapper {
+  position: relative;
+}
+          
+    </style>  
+  </head>
+
+  <body ng-app="formlyExample" ng-controller="MainCtrl as vm">
+    <div>
+      <h1>angular-formly example: {{vm.exampleTitle}}</h1>
+      <div>
+        Below is an example of using the formly <code>setTemplateWrapper</code> feature to keep templates consistent.
+        In this example, we add validation (using the <code>validators</code> api in combination with angular-messages)
+        and we only need to add that in one place and it's exactly the same for all formly types.
+        <br />
+        This also demos how to specify different template wrappers for different types. Generally this is useful when you
+        have multiple types using the same template wrapper, but it can be useful if you want to use the formly template without the wrapper
+        (also demonstrated).
+      </div>
+      <form ng-submit="vm.onSubmit()" novalidate>
+        <formly-form form="exampleForm" model="vm.model" fields="vm.fields">
+          <button type="submit" class="btn btn-primary submit-button" ng-disabled="exampleForm.$invalid">Submit</button>
+        </formly-form>
+      </form>
+      <h2>Model</h2>
+      <pre>{{vm.model | json}}</pre>
+      <h2>Fields <small>(note, functions are not shown)</small></h2>
+      <pre>{{vm.originalFields | json}}</pre>
+    </div>
+
+    <div style="margin-top:30px">
+      <small>
+        This is an example for the
+        <a href="https://formly-js.github.io/angular-formly">angular-formly</a>
+        project made with ♥ by
+        <strong>
+          <span ng-if="!vm.author.name || !vm.author.url">
+            {{vm.author.name || 'anonymous'}}
+          </span>
+          <a ng-if="vm.author.url" ng-href="{{::vm.author.url}}">
+            {{vm.author.name}}
+          </a>
+        </strong>
+        <br />
+        This example is running angular version "{{vm.env.angularVersion}}" and formly version "{{vm.env.formlyVersion}}"
+      </small>
+    </div>
+
+    <!-- Put custom templates here -->
+    <script type="text/ng-template" id="validation.html">
+      <div ng-message="required">This field is required</div>
+      <div ng-message="minlength">Too short</div>
+      <div ng-message="maxlength">Too long</div>
+      <div ng-message="email">Invalid email address</div>
+    </script>
+    
+    <script type="text/ng-template" id="input-template.html">
+      <input type="{{options.templateOptions.type || 'text'}}"
+	       class="form-control"
+	       id="{{id}}"
+	       formly-dynamic-name="id"
+	       formly-custom-validation="options.validators"
+	       placeholder="{{options.templateOptions.placeholder}}"
+	       aria-describedby="{{id}}_description"
+	       ng-required="options.templateOptions.required"
+	       ng-disabled="options.templateOptions.disabled"
+	       ng-model="model[options.key]">
+    </script>
+    <script type="text/ng-template" id="checkbox-template.html">
+      <input type="checkbox"
+             id="{{id}}"
+             formly-dynamic-name="id"
+             formly-custom-validation="options.validators"
+             aria-describedby="{{id}}_description"
+             ng-required="options.templateOptions.required"
+             ng-disabled="options.templateOptions.disabled"
+             ng-model="model[options.key]">
+      {{options.templateOptions.label || 'Checkbox'}}
+      {{options.templateOptions.required ? '*' : ''}}
+    </script>
+      <script>
+        /* global angular */
+(function() {
+
+  'use strict';
+
+  var app = angular.module('formlyExample', ['formly', 'ngMessages'], function config(formlyConfigProvider) {
+    formlyConfigProvider.setType([
+      {
+        name: 'input',
+        templateUrl: 'input-template.html'
+      },
+      {
+        name: 'checkbox',
+        templateUrl: 'checkbox-template.html'
+      }
+    ]);
+    formlyConfigProvider.setWrapper([
+      {
+        template: [
+          '<div class="formly-template-wrapper form-group"',
+          'ng-class="{\'has-error\': options.validation.errorExistsAndShouldBeVisible}">',
+          '<label for="{{::id}}">{{options.templateOptions.label}} {{options.templateOptions.required ? \'*\' : \'\'}}</label>',
+          '<formly-transclude></formly-transclude>',
+          '<div class="validation"',
+          'ng-if="options.validation.errorExistsAndShouldBeVisible"',
+          'ng-messages="options.formControl.$error">',
+          '<div ng-messages-include="validation.html"></div>',
+          '<div ng-message="{{::name}}" ng-repeat="(name, message) in ::options.validation.messages">',
+          '{{message(options.formControl.$viewValue, options.formControl.$modelValue, this)}}',
+          '</div>',
+          '</div>',
+          '</div>'
+        ].join(' ')
+      },
+      {
+        template: [
+          '<div class="checkbox formly-template-wrapper-for-checkboxes form-group">',
+          '<label for="{{::id}}">',
+          '<formly-transclude></formly-transclude>',
+          '</label>',
+          '</div>'
+        ].join(' '),
+        types: 'checkbox'
+      }
+    ]);
+  });
+  
+  app.run(function(formlyConfig, formlyValidationMessages) {
+    formlyConfig.extras.ngModelAttrsManipulatorPreferBound = true;
+    formlyValidationMessages.addStringMessage('maxlength', 'Your input is WAAAAY too long!');
+    formlyValidationMessages.messages.pattern = function(viewValue, modelValue, scope) {
+      return viewValue + ' is invalid';
+    };
+    formlyValidationMessages.addTemplateOptionValueMessage('minlength', 'minlength', '', 'is the minimum length', 'Too short');
+  });
+
+
+  app.controller('MainCtrl', function MainCtrl(formlyVersion) {
+    var vm = this;
+    // funcation assignment
+    vm.onSubmit = onSubmit;
+
+    // variable assignment
+    vm.author = { // optionally fill in your info below :-)
+      name: 'Kent C. Dodds',
+      url: 'https://twitter.com/kentcdodds'
+    };
+    vm.exampleTitle = 'Template Wrappers & Validation'; // add this
+    vm.env = {
+      angularVersion: angular.version.full,
+      formlyVersion: formlyVersion
+    };
+
+    vm.model = {};
+
+    vm.fields = [
+      {
+        key: 'email',
+        type: 'input',
+        templateOptions: {
+          label: 'Email',
+          required: true,
+          type: 'email',
+          maxlength: 10,
+          minlength: 6,
+          placeholder: 'example@example.com'
+        }
+      },
+      {
+        key: 'ip',
+        type: 'input',
+        validators: {
+          ipAddress: {
+            expression: function(viewValue, modelValue) {
+              var value = modelValue || viewValue;
+              return /(\d{1,3}\.){3}\d{1,3}/.test(value);
+            },
+            message: '$viewValue + " is not a valid IP Address"'
+          }
+        },
+        templateOptions: {
+          label: 'IP Address',
+          required: true,
+          type: 'text',
+          placeholder: '127.0.0.1',
+        },
+        validation: {
+          messages: {
+            required: function(viewValue, modelValue, scope) {
+              return scope.to.label + ' is required'
+            }
+          }
+        }
+      },
+      {
+        key: 'mac',
+        type: 'input',
+        templateOptions: {
+          label: 'MAC Address',
+          required: true,
+          placeholder: '49-8A-BD-4E-00-1D',
+          pattern: '([0-9A-F]{2}[:-]){5}([0-9A-F]{2})'
+        }
+      },
+      {
+        type: 'checkbox',
+        key: 'checked',
+        templateOptions: {
+          label: 'Check this'
+        }
+      },
+      {
+        key: 'checked2',
+        type: 'checkbox',
+        wrapper: null,
+        templateOptions: {
+          label: 'no wrapper here...'
+        }
+      }
+    ];
+
+    vm.originalFields = angular.copy(vm.fields);
+
+    // function definition
+    function onSubmit() {
+      alert(JSON.stringify(vm.model), null, 2);
+    }
+  });
+
+})();
+      </script>
+  </body>
+
+</html>

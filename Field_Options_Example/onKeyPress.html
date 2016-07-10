@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <!-- Twitter bootstrap -->
+    <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.css" rel="stylesheet">
+
+    <!-- apiCheck is used by formly to validate its api -->
+    <script src="//npmcdn.com/api-check@latest/dist/api-check.js"></script>
+    <!-- This is the latest version of angular (at the time this template was created) -->
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.4.7/angular.js"></script>
+
+    <!-- This is the current state of master for formly core. -->
+    <script src="//npmcdn.com/angular-formly@latest/dist/formly.js"></script>
+    <!-- This is the current state of master for the bootstrap templates -->
+    <script src="//npmcdn.com/angular-formly-templates-bootstrap@latest/dist/angular-formly-templates-bootstrap.js"></script>
+
+    <title>Angular Formly Example</title>
+      <style>
+        body {
+          margin: 20px
+        }
+
+        .formly-field {
+          margin-bottom: 16px;
+        }
+      </style>
+  </head>
+
+  <body ng-app="formlyExample" ng-controller="MainCtrl as vm">
+    <div>
+      <h1>angular-formly example: {{vm.exampleTitle}}</h1>
+      <div>
+        This is an example of using <code>templateOptions.onKeypress</code>.
+        This same idea could be applied to several other events like <code>onClick</code>
+        <code>onFocus</code>, <code>onBlur</code>, <code>onChange</code>, and
+        <a href="http://docs.angular-formly.com/v6.16.0/docs/ngmodelattrstemplatemanipulator">more</a>.
+      </div>
+      <hr />
+      <form ng-submit="vm.onSubmit()" name="vm.form" novalidate>
+        <formly-form model="vm.model" fields="vm.fields" options="vm.options" form="vm.form">
+          <button type="submit" class="btn btn-primary submit-button" ng-disabled="vm.form.$invalid">Submit</button>
+          <button type="button" class="btn btn-default" ng-click="vm.options.resetModel()">Reset</button>
+        </formly-form>
+      </form>
+      <hr />
+      <h2>Model Value</h2>
+      <pre>{{vm.model | json}}</pre>
+      <h2>Fields <small>(note, functions are not shown)</small></h2>
+      <pre>{{vm.originalFields | json}}</pre>
+      <h2>Form</h2>
+      <pre>{{vm.form | json}}</pre>
+    </div>
+
+    <div style="margin-top:30px">
+      <small>
+        This is an example for the
+        <a href="https://formly-js.github.io/angular-formly">angular-formly</a>
+        project made with ♥ by
+        <strong>
+          <span ng-if="!vm.author.name || !vm.author.url">
+            {{vm.author.name || 'anonymous'}}
+          </span>
+          <a ng-if="vm.author.url" ng-href="{{::vm.author.url}}">
+            {{vm.author.name}}
+          </a>
+        </strong>
+        <br />
+        This example is running angular version "{{vm.env.angularVersion}}" and formly version "{{vm.env.formlyVersion}}"
+      </small>
+    </div>
+
+    <!-- Put custom templates here -->
+      <script>
+      /* global angular */
+(function() {
+  
+  'use strict';
+
+  var app = angular.module('formlyExample', ['formly', 'formlyBootstrap']);
+  
+  app.run(function(formlyConfig) {
+    
+  });
+
+  app.controller('MainCtrl', function MainCtrl(formlyVersion) {
+    var vm = this;
+    // funcation assignment
+    vm.onSubmit = onSubmit;
+
+    // variable assignment
+    vm.author = { // optionally fill in your info below :-)
+      name: 'Kent C. Dodds',
+      url: 'https://twitter.com/kentcdodds'
+    };
+    vm.exampleTitle = 'onKeypress'; // add this
+    vm.env = {
+      angularVersion: angular.version.full,
+      formlyVersion: formlyVersion
+    };
+
+    vm.model = {};
+    vm.options = {};
+    
+    vm.fields = [
+      {
+        key: 'text1',
+        type: 'input',
+        templateOptions: {
+          label: 'As a function',
+          placeholder: 'Logging to the console',
+          onKeypress: function($viewValue, $modelValue, scope) {
+            console.log('The key was pressed!', $viewValue);
+          }
+        }
+      },
+      {
+        key: 'text2',
+        type: 'input',
+        templateOptions: {
+          label: 'As a string expression',
+          placeholder: 'Don\'t forget that onKeypress happens before the $viewValue gets updated...',
+          onKeypress: 'model.text1 = fc.$viewValue'
+        }
+      }
+    ];
+    
+    vm.originalFields = angular.copy(vm.fields);
+    
+    // function definition
+    function onSubmit() {
+      vm.options.updateInitialValue();
+      alert(JSON.stringify(vm.model), null, 2);
+    }
+  });
+
+})();
+      </script>
+  </body>
+
+</html>
